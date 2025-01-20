@@ -52,6 +52,7 @@ class EnOceanBinarySensor(EnOceanEntity, BinarySensorEntity):
     Supported EEPs (EnOcean Equipment Profiles):
     - F6-02-01 (Light and Blind Control - Application Style 2)
     - F6-02-02 (Light and Blind Control - Application Style 1)
+    - D5-00-01 (PTM535) (window contact)
     """
 
     def __init__(
@@ -65,6 +66,7 @@ class EnOceanBinarySensor(EnOceanEntity, BinarySensorEntity):
         self._attr_device_class = device_class
         self.which = -1
         self.onoff = -1
+        self.open_close = -1
         self._attr_unique_id = f"{combine_hex(dev_id)}-{device_class}"
         self._attr_name = dev_name
 
@@ -109,6 +111,10 @@ class EnOceanBinarySensor(EnOceanEntity, BinarySensorEntity):
         elif action == 0x15:
             self.which = 10
             self.onoff = 1
+        elif action == 0xE0:
+            self.open_close=0
+        elif action == 0xF0:
+            self.open_close=1
         self.hass.bus.fire(
             EVENT_BUTTON_PRESSED,
             {
@@ -116,5 +122,6 @@ class EnOceanBinarySensor(EnOceanEntity, BinarySensorEntity):
                 "pushed": pushed,
                 "which": self.which,
                 "onoff": self.onoff,
+                "open_close": self.open_close,
             },
         )
